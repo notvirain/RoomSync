@@ -1,130 +1,127 @@
 # RoomSync (Roommate Expense Splitter)
 
-RoomSync is a clean full-stack web app to manage shared expenses between roommates.
+RoomSync is a full-stack app for tracking shared roommate expenses, splitting costs, and viewing who owes whom.
+
+## What It Does
+
+- Register/login with JWT auth
+- Create groups and add members
+- Add shared expenses with equal split
+- View per-group balances:
+  - Positive balance: user should receive money
+  - Negative balance: user owes money
 
 ## Tech Stack
 
-- Frontend: React (hooks, Context API) + Axios
+- Frontend: React + Vite + Axios + React Router
 - Backend: Node.js + Express (MVC)
-- Database: MongoDB Atlas (Mongoose ODM)
-- Authentication: JWT + bcrypt password hashing
-
-## Features
-
-- User registration and login
-- Group creation and member management
-- Shared expense creation with equal split
-- Group-wise balances where:
-  - positive balance means user should receive money
-  - negative balance means user owes money
+- Database: MongoDB Atlas (Mongoose)
+- Auth: JWT + bcryptjs
 
 ## Project Structure
 
-- backend: Express API with MVC structure (routes, controllers, models, middleware)
-- frontend: React app with pages for Login/Register, Dashboard, Group Details
+- `backend/` Express API
+- `frontend/` React app
 
-## API Endpoints
+## API Routes
 
-- POST /auth/register
-- POST /auth/login
-- POST /groups
-- GET /groups
-- POST /groups/:id/add-member
-- POST /expenses
-- GET /expenses/:groupId
-- GET /balances/:groupId
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /groups`
+- `GET /groups`
+- `POST /groups/:id/add-member`
+- `POST /expenses`
+- `GET /expenses/:groupId`
+- `GET /balances/:groupId`
 
 Protected routes require:
-- Authorization: Bearer <token>
 
-## Local Development Setup
+- `Authorization: Bearer <token>`
+
+## Local Setup
 
 ### 1) Backend
 
-1. Open terminal and move to backend:
-   - cd backend
-2. Create .env from example:
-   - copy .env.example .env
-3. Update .env values:
-   - PORT=5000
-   - MONGO_URI=your_mongodb_connection
-   - JWT_SECRET=your_secure_secret
-   - JWT_EXPIRES_IN=7d
-4. Install and run:
-   - npm install
-   - npm run dev
+```bash
+cd backend
+copy .env.example .env
+npm install
+npm run dev
+```
+
+Required backend env values (`backend/.env`):
+
+- `PORT=5000`
+- `MONGO_URI=<mongodb connection string>`
+- `JWT_SECRET=<strong secret>`
+- `JWT_EXPIRES_IN=7d`
+- `CORS_ORIGIN=http://localhost:5173`
 
 ### 2) Frontend
 
-1. Open a new terminal and move to frontend:
-   - cd frontend
-2. Create .env from example:
-   - copy .env.example .env
-3. Set API URL in frontend env:
-   - VITE_API_BASE_URL=http://localhost:5000
-4. Install and run:
-   - npm install
-   - npm run dev
+```bash
+cd frontend
+copy .env.example .env
+npm install
+npm run dev
+```
 
-## Deployment Guide
+Required frontend env values (`frontend/.env`):
 
-### Database: MongoDB Atlas
+- `VITE_API_BASE_URL=http://localhost:5000`
 
-1. Create Atlas cluster.
-2. Create DB user and password.
-3. Add network access for your backend host (or allow all for initial testing).
-4. Copy Atlas connection string and use it as backend MONGO_URI.
+## Deployment
 
-### Backend: Render or Railway
+### Backend (Render)
 
-1. Push repository to GitHub.
-2. Create backend service from repo.
-3. Set service root directory to backend.
-4. Build command:
-   - npm install
-5. Start command:
-   - npm start
-6. Set backend environment variables:
-   - NODE_ENV=production
-   - MONGO_URI=your_atlas_uri
-   - JWT_SECRET=your_secure_secret
-   - JWT_EXPIRES_IN=7d
-7. Deploy and verify health endpoint:
-   - GET /
+1. Create a Web Service from this repo.
+2. Set root directory to `backend`.
+3. Build command: `npm install`
+4. Start command: `npm start`
+5. Set env vars:
+   - `NODE_ENV=production`
+   - `MONGO_URI=<atlas uri>`
+   - `JWT_SECRET=<strong secret>`
+   - `JWT_EXPIRES_IN=7d`
+   - `CORS_ORIGIN=<your vercel frontend origin>`
+6. Deploy and verify:
+   - `GET /` returns `RoomSync API is running`
 
-### Frontend: Vercel
+### Frontend (Vercel)
 
-1. Import repository in Vercel.
-2. Set root directory to frontend.
-3. Build command:
-   - npm run build
-4. Output directory:
-   - dist
-5. Add frontend environment variable:
-   - VITE_API_BASE_URL=https://your-backend-domain
-6. Deploy.
+1. Import repo into Vercel.
+2. Set root directory to `frontend`.
+3. Build command: `npm run build`
+4. Output directory: `dist`
+5. Set env var:
+   - `VITE_API_BASE_URL=<your render backend url>`
+6. Redeploy after env updates.
 
-Note: Vercel SPA rewrite config is included so refreshing routes like /dashboard or /groups/:groupId works.
+`frontend/vercel.json` already includes SPA rewrites for client-side routes.
+
+## Common Troubleshooting
+
+- CORS error (`CORS Missing Allow Origin`):
+  - Ensure `CORS_ORIGIN` exactly matches frontend domain (no trailing slash).
+  - If testing preview + production domains, add both as comma-separated origins.
+- Requests stuck on auth forms:
+  - Verify frontend points to active backend URL in `VITE_API_BASE_URL`.
+- Atlas auth errors:
+  - Recheck DB user/password, URL-encoding, and network access.
+- `React is not defined` in frontend:
+  - Ensure React plugin setup is present via `frontend/vite.config.js`.
 
 ## Balance Logic
 
 For each expense:
 
-- splitAmount = totalAmount / numberOfUsersInSplit
-- For each user in splitAmong except paidBy:
+- `splitAmount = totalAmount / numberOfUsersInSplit`
+- For each user in `splitAmong` except `paidBy`:
   - payer balance += splitAmount
   - split user balance -= splitAmount
 
-## Production Checklist
+## Evaluation Notes
 
-- Backend deployed and connected to Atlas
-- Frontend points to deployed backend via VITE_API_BASE_URL
-- CORS configured appropriately in backend
-- Register/Login flow works in production
-- Group, Expense, and Balance flows are working
-
-## Academic Evaluation Notes
-
-- Code is intentionally minimal and modular.
-- Backend follows MVC with clean separation of concerns.
-- Input validations and auth protections are included.
+- Backend follows MVC structure.
+- Input validation and auth guards are included.
+- Deployment-ready env examples are included in both `backend/.env.example` and `frontend/.env.example`.

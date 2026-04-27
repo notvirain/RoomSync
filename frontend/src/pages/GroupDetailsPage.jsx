@@ -666,7 +666,7 @@ const GroupDetailsPage = () => {
 
         <ul className="simple-list stagger-list">
           {filteredExpenses.map((expense, idx) => (
-            <li key={expense._id} style={{ ['--i']: idx }}>
+            <li key={expense._id} className="animate-fluid" style={{ ['--i']: idx }}>
               <strong>{expense.description || "Shared expense"}</strong> - {inr.format(Number(expense.amount || 0))} paid by {expense.paidBy?.name}
               <br />
               <span className="caption">

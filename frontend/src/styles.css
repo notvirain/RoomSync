@@ -171,14 +171,14 @@ h3 {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  top: 0.6rem;
+  top: 1.4rem; /* more breathing room above */
   width: min(1040px, 94vw);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  padding: 0.38rem 0.72rem;
-  border-radius: 0.85rem;
+  padding: 0.72rem 0.9rem; /* slightly taller nav */
+  border-radius: 1rem;
   background: color-mix(in srgb, var(--card-strong) 86%, transparent);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
@@ -190,6 +190,7 @@ h3 {
   display: flex;
   gap: 0.6rem;
   align-items: center;
+  transform-origin: center left;
 }
 
 .topnav .brand-label {
@@ -203,7 +204,10 @@ h3 {
   text-decoration: none;
   font-weight: 600;
   opacity: 0.92;
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1), color 180ms ease, opacity 140ms linear;
 }
+
+.topnav .topnav-pages a:hover { transform: translateY(-3px); opacity:1 }
 
 .topnav .topnav-right {
   display: flex;
@@ -212,10 +216,12 @@ h3 {
 }
 
 .accent-presets { display:flex; gap:0.45rem; align-items:center; }
-.accent-presets .preset { width:20px; height:20px; border-radius:4px; border:1px solid var(--border); cursor:pointer }
+.accent-presets .preset { width:22px; height:22px; border-radius:6px; border:1px solid var(--border); cursor:pointer; box-shadow: 0 6px 14px rgba(0,0,0,0.06); transition: transform 160ms ease, box-shadow 160ms ease; }
+.accent-presets .preset:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
 .accent-presets .preset.ocean { background: linear-gradient(180deg, #56b1ff, #2f6ee5) }
 .accent-presets .preset.emerald { background: linear-gradient(180deg, #6ee5b0, #2fa56e) }
 .accent-presets .preset.graphite { background: linear-gradient(180deg, #bfc8d6, #8894a6) }
+.accent-presets .preset.is-active { box-shadow: 0 6px 26px color-mix(in srgb, var(--brand) 30%, transparent); outline: 2px solid color-mix(in srgb, var(--brand) 34%, transparent); transform: translateY(-2px) scale(1.02); }
 
 /* Accent presets -- applied via body[data-accent] */
 body[data-accent="ocean"] {
@@ -696,6 +702,28 @@ body[data-theme="dark"] .secondary-btn:hover {
     transform: scale(1) translateY(0);
   }
 }
+
+/* Fluid floating animation for subtle life */
+@keyframes floatY {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+
+.animate-fluid { animation: floatY 4.4s ease-in-out infinite; }
+
+/* Hover micro-motion */
+.animate-hover { transition: transform 180ms cubic-bezier(.2,.9,.2,1), color 160ms ease; }
+
+/* Apply fluid micro-motion to cards and list items for a premium feel */
+.group-card.animate-fluid { transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms ease; }
+.group-card.animate-fluid:hover { transform: translateY(-6px) scale(1.01); box-shadow: 0 18px 44px rgba(0,0,0,0.12); }
+
+.simple-list > li.animate-fluid { transition: transform 240ms cubic-bezier(.2,.9,.2,1); }
+.simple-list > li.animate-fluid:hover { transform: translateY(-4px); }
+
+/* Space for topnav so content isn't hidden under fixed nav */
+.page-shell { padding-top: 5.4rem; }
 
 @keyframes riseIn {
   from {

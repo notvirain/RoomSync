@@ -5,27 +5,48 @@ import Icon from "./Icon";
 
 const TopNav = () => {
   const { user } = useAuth();
-  const { theme, setAccent } = useTheme();
+  const { theme, accent, setAccent } = useTheme();
 
   return (
     <div className="topnav">
       <div className="topnav-left">
-        <div className="topnav-brand">
+        <div className="topnav-brand animate-fluid" title="RoomSync">
           <Icon name="spark" size={18} />
           <span className="brand-label">RoomSync</span>
         </div>
         <nav className="topnav-pages" aria-label="Primary">
-          <Link to="/dashboard">Dashboard</Link>
-          <Link to="/groups">Groups</Link>
-          <Link to="/profile">Profile</Link>
+          <Link to="/dashboard" className="animate-hover">Dashboard</Link>
+          <Link to="/groups" className="animate-hover">Groups</Link>
+          <Link to="/profile" className="animate-hover">Profile</Link>
         </nav>
       </div>
 
       <div className="topnav-right">
-        <div className="accent-presets">
-          <button type="button" className="preset ocean" onClick={() => setAccent("ocean")} aria-label="Ocean preset" />
-          <button type="button" className="preset emerald" onClick={() => setAccent("emerald")} aria-label="Emerald preset" />
-          <button type="button" className="preset graphite" onClick={() => setAccent("graphite")} aria-label="Graphite preset" />
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <span className="caption" style={{ marginRight: 6 }}>Accent</span>
+          <div className="accent-presets" role="toolbar" aria-label="Theme accents">
+            <button
+              type="button"
+              title="Ocean"
+              className={`preset ocean ${accent === "ocean" ? "is-active" : ""}`}
+              onClick={() => setAccent("ocean")}
+              aria-pressed={accent === "ocean"}
+            />
+            <button
+              type="button"
+              title="Emerald"
+              className={`preset emerald ${accent === "emerald" ? "is-active" : ""}`}
+              onClick={() => setAccent("emerald")}
+              aria-pressed={accent === "emerald"}
+            />
+            <button
+              type="button"
+              title="Graphite"
+              className={`preset graphite ${accent === "graphite" ? "is-active" : ""}`}
+              onClick={() => setAccent("graphite")}
+              aria-pressed={accent === "graphite"}
+            />
+          </div>
         </div>
 
         <div className="topnav-user">

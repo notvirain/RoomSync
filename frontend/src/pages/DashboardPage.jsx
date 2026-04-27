@@ -170,7 +170,7 @@ const DashboardPage = () => {
 
         <div className="group-list stagger-list">
           {groups.map((group, idx) => (
-            <Link key={group._id} to={`/groups/${group._id}`} className="group-card" style={{ ['--i']: idx }}>
+            <Link key={group._id} to={`/groups/${group._id}`} className="group-card animate-fluid" style={{ ['--i']: idx }}>
               <h3>{group.name}</h3>
               <p>{group.members.length} member(s)</p>
               <p className="caption">Invite code: {group.inviteCode || "-"}</p>

@@ -126,14 +126,22 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    // Accept either `identifier` (email or username), `email`, or `username` for compatibility
+    const rawIdentifier = req.body.identifier || req.body.email || req.body.username;
+    const { password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+    if (!rawIdentifier || !password) {
+      return res.status(400).json({ message: "Identifier (email or username) and password are required" });
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
-    const user = await User.findOne({ email: normalizedEmail });
+    const normalized = (rawIdentifier || "").toLowerCase().trim();
+
+    let user = null;
+    if (normalized.includes("@")) {
+      user = await User.findOne({ email: normalized });
+    } else {
+      user = await User.findOne({ username: normalized });
+    }
 
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });

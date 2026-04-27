@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 const LoginPage = () => {
   const { token, loading, error, setError, login } = useAuth();
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ identifier: "", password: "" });
 
   useEffect(() => {
     document.body.dataset.page = "auth";
@@ -24,7 +24,7 @@ const LoginPage = () => {
   const onSubmit = async (event) => {
     event.preventDefault();
     setError("");
-    await login(formData.email, formData.password).catch(() => {});
+    await login(formData.identifier, formData.password).catch(() => {});
   };
 
   return (
@@ -38,10 +38,10 @@ const LoginPage = () => {
 
         <form onSubmit={onSubmit} className="auth-form">
           <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
+            type="text"
+            name="identifier"
+            placeholder="Email or username"
+            value={formData.identifier}
             onChange={onChange}
             required
           />

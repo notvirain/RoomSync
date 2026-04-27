@@ -46,12 +46,13 @@ export const AuthProvider = ({ children }) => {
     };
   }, [token, navigate]);
 
-  const login = async (email, password) => {
+  const login = async (identifier, password) => {
     setLoading(true);
     setError("");
 
     try {
-      const response = await api.post("/auth/login", { email, password });
+      // Send `identifier` for backend to accept email or username
+      const response = await api.post("/auth/login", { identifier, password });
       const { token: nextToken, user: nextUser } = response.data;
 
       setToken(nextToken);

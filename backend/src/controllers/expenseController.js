@@ -4,6 +4,12 @@ const Group = require("../models/Group");
 
 const userProjection = "name email username memberCode";
 
+const cleanupByRetention = async (group) => {
+  const retentionDays = Number(group.expenseRetentionDays || 3650);
+  const cutoffDate = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+  await Expense.deleteMany({ group: group._id, createdAt: { $lt: cutoffDate } });
+};
+
 const addExpense = async (req, res) => {
   try {
     const { groupId, amount, paidBy, splitAmong, description } = req.body;
@@ -100,6 +106,8 @@ const getExpensesByGroup = async (req, res) => {
       return res.status(403).json({ message: "Not allowed to view expenses of this group" });
     }
 
+    await cleanupByRetention(group);
+
     const expenses = await Expense.find({ group: groupId })
       .populate("paidBy", userProjection)
       .populate("createdBy", userProjection)
@@ -112,7 +120,41 @@ const getExpensesByGroup = async (req, res) => {
   }
 };
 
+const deleteOlderExpenses = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { beforeDate } = req.body;
+
+    const cutoff = new Date(beforeDate);
+    if (!beforeDate || Number.isNaN(cutoff.getTime())) {
+      return res.status(400).json({ message: "Valid beforeDate is required" });
+    }
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (group.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Only the group owner can delete older expenses" });
+    }
+
+    const result = await Expense.deleteMany({
+      group: groupId,
+      createdAt: { $lt: cutoff },
+    });
+
+    return res.status(200).json({
+      message: "Older expenses deleted",
+      deletedCount: result.deletedCount || 0,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to delete older expenses" });
+  }
+};
+
 module.exports = {
   addExpense,
   getExpensesByGroup,
+  deleteOlderExpenses,
 };

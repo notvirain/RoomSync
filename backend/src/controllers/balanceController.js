@@ -1,6 +1,12 @@
 const Expense = require("../models/Expense");
 const Group = require("../models/Group");
 
+const cleanupByRetention = async (group) => {
+  const retentionDays = Number(group.expenseRetentionDays || 3650);
+  const cutoffDate = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+  await Expense.deleteMany({ group: group._id, createdAt: { $lt: cutoffDate } });
+};
+
 const getGroupBalances = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -17,6 +23,8 @@ const getGroupBalances = async (req, res) => {
     if (!requesterInGroup) {
       return res.status(403).json({ message: "Not allowed to view balances for this group" });
     }
+
+    await cleanupByRetention(group);
 
     const expenses = await Expense.find({ group: groupId });
 

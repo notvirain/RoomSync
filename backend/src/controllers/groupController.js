@@ -32,6 +32,7 @@ const createGroup = async (req, res) => {
       inviteCode: await generateUniqueInviteCode(),
       createdBy: req.user._id,
       members: [req.user._id],
+      expenseRetentionDays: 3650,
     });
 
     const populatedGroup = await Group.findById(group._id)
@@ -166,10 +167,42 @@ const deleteGroup = async (req, res) => {
   }
 };
 
+const updateExpenseRetention = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const retentionDays = Number(req.body.retentionDays);
+
+    if (!Number.isFinite(retentionDays) || retentionDays < 30) {
+      return res.status(400).json({ message: "retentionDays must be at least 30" });
+    }
+
+    const group = await Group.findById(id);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (group.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Only the group owner can update retention" });
+    }
+
+    group.expenseRetentionDays = Math.floor(retentionDays);
+    await group.save();
+
+    const updatedGroup = await Group.findById(id)
+      .populate("createdBy", userProjection)
+      .populate("members", userProjection);
+
+    return res.status(200).json(updatedGroup);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to update expense retention" });
+  }
+};
+
 module.exports = {
   createGroup,
   getGroups,
   addMember,
   joinGroup,
   deleteGroup,
+  updateExpenseRetention,
 };

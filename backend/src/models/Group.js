@@ -25,6 +25,12 @@ const groupSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    expenseRetentionDays: {
+      type: Number,
+      default: 3650,
+      min: 30,
+      max: 36500,
+    },
   },
   { timestamps: true }
 );

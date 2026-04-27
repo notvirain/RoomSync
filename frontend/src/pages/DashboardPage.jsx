@@ -5,18 +5,29 @@ import { useAuth } from "../context/AuthContext";
 import { useAppContext } from "../context/AppContext";
 
 const DashboardPage = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, loading, updateProfile, deleteProfile } = useAuth();
   const { groups, groupsLoading, groupsError, fetchGroups, createGroup, joinGroup } = useAppContext();
   const [groupName, setGroupName] = useState("");
   const [joinCode, setJoinCode] = useState("");
+  const [profileForm, setProfileForm] = useState({ name: "", username: "" });
   const [localError, setLocalError] = useState("");
   const [localSuccess, setLocalSuccess] = useState("");
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [updatingProfile, setUpdatingProfile] = useState(false);
+  const [deletingProfile, setDeletingProfile] = useState(false);
 
   useEffect(() => {
+    document.body.dataset.page = "dashboard";
     fetchGroups();
   }, []);
+
+  useEffect(() => {
+    setProfileForm({
+      name: user?.name || "",
+      username: user?.username || "",
+    });
+  }, [user]);
 
   const copyText = async (text, successMessage) => {
     if (!text) {
@@ -77,6 +88,50 @@ const DashboardPage = () => {
     }
   };
 
+  const handleProfileSave = async (event) => {
+    event.preventDefault();
+    setLocalError("");
+    setLocalSuccess("");
+
+    const nextName = profileForm.name.trim();
+    const nextUsername = profileForm.username.trim().toLowerCase();
+
+    if (!nextName || !nextUsername) {
+      setLocalError("Name and username are required.");
+      return;
+    }
+
+    if (!/^[a-z0-9_]{3,20}$/.test(nextUsername)) {
+      setLocalError("Username must be 3-20 chars using lowercase letters, numbers, or underscore.");
+      return;
+    }
+
+    try {
+      setUpdatingProfile(true);
+      await updateProfile({ name: nextName, username: nextUsername });
+      setLocalSuccess("Profile updated.");
+    } catch (error) {
+      setLocalError(error.response?.data?.message || "Failed to update profile");
+    } finally {
+      setUpdatingProfile(false);
+    }
+  };
+
+  const handleProfileDelete = async () => {
+    const shouldDelete = window.confirm("Delete your profile? This cannot be undone.");
+    if (!shouldDelete) {
+      return;
+    }
+
+    try {
+      setDeletingProfile(true);
+      await deleteProfile();
+    } catch (error) {
+      setLocalError(error.response?.data?.message || "Failed to delete profile");
+      setDeletingProfile(false);
+    }
+  };
+
   return (
     <div className="page-shell">
       <header className="top-bar">
@@ -89,7 +144,7 @@ const DashboardPage = () => {
         </button>
       </header>
 
-      <section className="panel">
+      <section className="panel animate-rise">
         <h2>Your Profile</h2>
         <div className="profile-grid">
           <div>
@@ -127,9 +182,44 @@ const DashboardPage = () => {
             </div>
           </div>
         </div>
+
+        <details className="dropdown-panel">
+          <summary>My Profile Settings</summary>
+          <form onSubmit={handleProfileSave} className="stack-form nested-form">
+            <input
+              type="text"
+              value={profileForm.name}
+              onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))}
+              placeholder="Name"
+              disabled={updatingProfile || deletingProfile || loading}
+            />
+            <input
+              type="text"
+              value={profileForm.username}
+              onChange={(event) =>
+                setProfileForm((prev) => ({ ...prev, username: event.target.value.toLowerCase() }))
+              }
+              placeholder="Username"
+              disabled={updatingProfile || deletingProfile || loading}
+            />
+            <div className="action-row">
+              <button type="submit" disabled={updatingProfile || deletingProfile || loading}>
+                {updatingProfile ? "Saving..." : "Save Profile"}
+              </button>
+              <button
+                type="button"
+                className="danger-btn"
+                onClick={handleProfileDelete}
+                disabled={updatingProfile || deletingProfile || loading}
+              >
+                {deletingProfile ? "Deleting..." : "Delete Profile"}
+              </button>
+            </div>
+          </form>
+        </details>
       </section>
 
-      <section className="panel">
+      <section className="panel animate-rise">
         <h2>Start or Join</h2>
         <div className="option-grid">
           <div className="option-card">
@@ -170,7 +260,7 @@ const DashboardPage = () => {
         {localSuccess ? <p className="success-text">{localSuccess}</p> : null}
       </section>
 
-      <section className="panel">
+      <section className="panel animate-rise">
         <h2>Your Groups</h2>
         {groupsLoading ? <LoadingSpinner message="Loading groups..." /> : null}
         {groupsError ? <p className="error-text">{groupsError}</p> : null}

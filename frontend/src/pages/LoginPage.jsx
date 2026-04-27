@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const LoginPage = () => {
   const { token, loading, error, setError, login } = useAuth();
   const [formData, setFormData] = useState({ email: "", password: "" });
+
+  useEffect(() => {
+    document.body.dataset.page = "auth";
+  }, []);
 
   if (token) {
     return <Navigate to="/dashboard" replace />;
@@ -25,9 +29,12 @@ const LoginPage = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
+      <div className="auth-card animate-pop">
         <h1>RoomSync</h1>
         <h2>Login</h2>
+        <p className="caption auth-description">
+          Track shared expenses with roommates, split bills fairly, and instantly see who owes what.
+        </p>
 
         <form onSubmit={onSubmit} className="auth-form">
           <input

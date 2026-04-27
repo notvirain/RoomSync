@@ -1,5 +1,6 @@
 const Group = require("../models/Group");
 const User = require("../models/User");
+const Expense = require("../models/Expense");
 
 const randomGroupCode = () =>
   `GRP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
@@ -143,9 +144,32 @@ const joinGroup = async (req, res) => {
   }
 };
 
+const deleteGroup = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const group = await Group.findById(id);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    if (group.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Only the group owner can delete this group" });
+    }
+
+    await Expense.deleteMany({ group: group._id });
+    await Group.findByIdAndDelete(group._id);
+
+    return res.status(200).json({ message: "Group deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to delete group" });
+  }
+};
+
 module.exports = {
   createGroup,
   getGroups,
   addMember,
   joinGroup,
+  deleteGroup,
 };

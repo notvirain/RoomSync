@@ -1,5 +1,7 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const Group = require("../models/Group");
+const Expense = require("../models/Expense");
 const generateToken = require("../utils/generateToken");
 
 const USERNAME_REGEX = /^[a-z0-9_]{3,20}$/;
@@ -153,4 +155,75 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+const updateProfile = async (req, res) => {
+  try {
+    const { name, username } = req.body;
+
+    const nextName = (name || "").trim();
+    const nextUsername = normalizeUsername(username);
+
+    if (!nextName || !nextUsername) {
+      return res.status(400).json({ message: "Name and username are required" });
+    }
+
+    if (!USERNAME_REGEX.test(nextUsername)) {
+      return res.status(400).json({
+        message: "Username must be 3-20 chars and use only lowercase letters, numbers, and underscores",
+      });
+    }
+
+    const conflictingUser = await User.findOne({
+      username: nextUsername,
+      _id: { $ne: req.user._id },
+    });
+
+    if (conflictingUser) {
+      return res.status(400).json({ message: "Username is already taken" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.name = nextName;
+    user.username = nextUsername;
+    await user.save();
+
+    return res.status(200).json({ user: toUserResponse(user) });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to update profile" });
+  }
+};
+
+const deleteProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const ownedGroups = await Group.find({ createdBy: userId }).select("_id");
+    const ownedGroupIds = ownedGroups.map((group) => group._id);
+
+    if (ownedGroupIds.length > 0) {
+      await Expense.deleteMany({ group: { $in: ownedGroupIds } });
+      await Group.deleteMany({ _id: { $in: ownedGroupIds } });
+    }
+
+    await Group.updateMany({ members: userId }, { $pull: { members: userId } });
+
+    const emptyGroups = await Group.find({ members: { $size: 0 } }).select("_id");
+    const emptyGroupIds = emptyGroups.map((group) => group._id);
+    if (emptyGroupIds.length > 0) {
+      await Expense.deleteMany({ group: { $in: emptyGroupIds } });
+      await Group.deleteMany({ _id: { $in: emptyGroupIds } });
+    }
+
+    await Expense.deleteMany({ $or: [{ paidBy: userId }, { createdBy: userId }] });
+    await User.findByIdAndDelete(userId);
+
+    return res.status(200).json({ message: "Profile deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to delete profile" });
+  }
+};
+
+module.exports = { register, login, updateProfile, deleteProfile };

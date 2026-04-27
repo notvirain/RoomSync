@@ -102,6 +102,44 @@ export const AuthProvider = ({ children }) => {
     navigate("/login");
   };
 
+  const updateProfile = async (payload) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await api.put("/auth/profile", payload);
+      const nextUser = response.data.user;
+      setUser(nextUser);
+      localStorage.setItem("roomsync_user", JSON.stringify(nextUser));
+      return nextUser;
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to update profile");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteProfile = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      await api.delete("/auth/profile");
+      setToken("");
+      setUser(null);
+      localStorage.removeItem("roomsync_token");
+      localStorage.removeItem("roomsync_user");
+      setAuthToken("");
+      navigate("/register", { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to delete profile");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = useMemo(
     () => ({
       token,
@@ -112,6 +150,8 @@ export const AuthProvider = ({ children }) => {
       login,
       register,
       logout,
+      updateProfile,
+      deleteProfile,
     }),
     [token, user, loading, error]
   );

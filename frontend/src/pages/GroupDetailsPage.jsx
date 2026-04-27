@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../api/axios";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useAppContext } from "../context/AppContext";
+import { useAuth } from "../context/AuthContext";
 
 const inr = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -20,14 +21,18 @@ const asDateTime = (value) =>
 
 const GroupDetailsPage = () => {
   const { groupId } = useParams();
-  const { groups, fetchGroups, addMemberToGroup } = useAppContext();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { groups, fetchGroups, addMemberToGroup, deleteGroup } = useAppContext();
   const [expenses, setExpenses] = useState([]);
   const [balances, setBalances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [expenseToast, setExpenseToast] = useState("");
   const [addingMember, setAddingMember] = useState(false);
   const [addingExpense, setAddingExpense] = useState(false);
+  const [deletingGroup, setDeletingGroup] = useState(false);
 
   const [memberUsername, setMemberUsername] = useState("");
   const [memberCode, setMemberCode] = useState("");
@@ -63,12 +68,27 @@ const GroupDetailsPage = () => {
   };
 
   useEffect(() => {
+    document.body.dataset.page = "group";
     fetchGroups();
   }, [groupId]);
 
   useEffect(() => {
     loadDetails();
   }, [groupId]);
+
+  useEffect(() => {
+    if (!expenseToast) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setExpenseToast("");
+    }, 2200);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [expenseToast]);
 
   const handleSplitToggle = (userId) => {
     setExpenseForm((prev) => {
@@ -176,7 +196,7 @@ const GroupDetailsPage = () => {
       });
 
       setExpenseForm({ description: "", amount: "", paidBy: "", splitAmong: [] });
-      setSuccess("Expense added successfully.");
+      setExpenseToast("Expense added successfully.");
       await loadDetails();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to add expense");
@@ -188,6 +208,24 @@ const GroupDetailsPage = () => {
   if (loading) {
     return <LoadingSpinner message="Loading group details..." />;
   }
+
+  const canDeleteGroup = group?.createdBy?._id === user?._id;
+
+  const handleDeleteGroup = async () => {
+    const shouldDelete = window.confirm("Delete this group and all its expenses?");
+    if (!shouldDelete) {
+      return;
+    }
+
+    try {
+      setDeletingGroup(true);
+      await deleteGroup(groupId);
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to delete group");
+      setDeletingGroup(false);
+    }
+  };
 
   const filteredExpenses = expenses
     .filter((expense) => {
@@ -212,21 +250,55 @@ const GroupDetailsPage = () => {
 
   return (
     <div className="page-shell">
+      {expenseToast ? <div className="toast-success">{expenseToast}</div> : null}
+
       <header className="top-bar">
         <div>
           <p className="caption">Group Details</p>
           <h1>{group?.name || "Group"}</h1>
         </div>
-        <Link to="/dashboard" className="secondary-btn link-btn">
-          Back to Dashboard
-        </Link>
+        <div className="action-row">
+          {canDeleteGroup ? (
+            <button
+              type="button"
+              className="danger-btn"
+              onClick={handleDeleteGroup}
+              disabled={deletingGroup}
+            >
+              {deletingGroup ? "Deleting..." : "Delete Group"}
+            </button>
+          ) : null}
+          <Link to="/dashboard" className="secondary-btn link-btn">
+            Back to Dashboard
+          </Link>
+        </div>
       </header>
 
       {error ? <p className="error-text">{error}</p> : null}
       {success ? <p className="success-text">{success}</p> : null}
 
-      <section className="panel">
-        <h2>Group Summary</h2>
+      <section className="panel animate-rise">
+        <h2>Balances</h2>
+        {balances.length === 0 ? <p>No balances yet.</p> : null}
+        <ul className="simple-list">
+          {balances.map((entry) => (
+            <li key={entry.userId}>
+              {entry.name}: {entry.balance > 0 ? `+${inr.format(entry.balance)}` : inr.format(entry.balance)}
+              <br />
+              <span className="caption">
+                {entry.balance > 0
+                  ? `${entry.name} should receive ${inr.format(entry.balance)}`
+                  : entry.balance < 0
+                    ? `${entry.name} owes ${inr.format(Math.abs(entry.balance))}`
+                    : `${entry.name} is settled up`}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <details className="dropdown-panel animate-rise" open>
+        <summary>Group Summary</summary>
         <div className="summary-grid">
           <div className="summary-item">
             <p className="caption">Total expenses</p>
@@ -257,19 +329,11 @@ const GroupDetailsPage = () => {
         <p className="caption">
           Created by {group?.createdBy?.name || "-"} on {asDateTime(group?.createdAt)}
         </p>
-      </section>
+      </details>
 
-      <section className="panel">
-        <h2>Members</h2>
-        <ul className="simple-list">
-          {(group?.members || []).map((member) => (
-            <li key={member._id}>
-              {member.name} ({member.email}) - @{member.username || "unknown"} - {member.memberCode || "-"}
-            </li>
-          ))}
-        </ul>
-
-        <form onSubmit={submitAddMember} className="inline-form">
+      <details className="dropdown-panel animate-rise" open>
+        <summary>Invite Members</summary>
+        <form onSubmit={submitAddMember} className="inline-form nested-form">
           <input
             type="text"
             value={memberUsername}
@@ -288,9 +352,18 @@ const GroupDetailsPage = () => {
             {addingMember ? "Inviting..." : "Invite Member"}
           </button>
         </form>
-      </section>
 
-      <section className="panel">
+        <h3 className="subheading">Current Members</h3>
+        <ul className="simple-list">
+          {(group?.members || []).map((member) => (
+            <li key={member._id}>
+              {member.name} ({member.email}) - @{member.username || "unknown"} - {member.memberCode || "-"}
+            </li>
+          ))}
+        </ul>
+      </details>
+
+      <section className="panel animate-rise">
         <h2>Add Expense</h2>
         <form onSubmit={submitExpense} className="stack-form">
           <input
@@ -359,15 +432,15 @@ const GroupDetailsPage = () => {
         </form>
       </section>
 
-      <section className="panel">
+      <section className="panel animate-rise">
         <h2>Expenses</h2>
 
-        <div className="filters-row">
-          <select value={expensePeriod} onChange={(event) => setExpensePeriod(event.target.value)}>
+        <div className="filters-row compact-row">
+          <select className="compact-select" value={expensePeriod} onChange={(event) => setExpensePeriod(event.target.value)}>
             <option value="all">All</option>
             <option value="thisMonth">This Month</option>
           </select>
-          <select value={expenseSort} onChange={(event) => setExpenseSort(event.target.value)}>
+          <select className="compact-select" value={expenseSort} onChange={(event) => setExpenseSort(event.target.value)}>
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
           </select>
@@ -387,25 +460,6 @@ const GroupDetailsPage = () => {
         </ul>
       </section>
 
-      <section className="panel">
-        <h2>Balances</h2>
-        {balances.length === 0 ? <p>No balances yet.</p> : null}
-        <ul className="simple-list">
-          {balances.map((entry) => (
-            <li key={entry.userId}>
-              {entry.name}: {entry.balance > 0 ? `+${inr.format(entry.balance)}` : inr.format(entry.balance)}
-              <br />
-              <span className="caption">
-                {entry.balance > 0
-                  ? `${entry.name} should receive ${inr.format(entry.balance)}`
-                  : entry.balance < 0
-                    ? `${entry.name} owes ${inr.format(Math.abs(entry.balance))}`
-                    : `${entry.name} is settled up`}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
     </div>
   );
 };

@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const RegisterPage = () => {
   const { token, loading, error, setError, register } = useAuth();
   const [formData, setFormData] = useState({ name: "", email: "", username: "", password: "" });
+
+  useEffect(() => {
+    document.body.dataset.page = "auth";
+  }, []);
 
   if (token) {
     return <Navigate to="/dashboard" replace />;
@@ -32,9 +36,12 @@ const RegisterPage = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
+      <div className="auth-card animate-pop">
         <h1>RoomSync</h1>
         <h2>Register</h2>
+        <p className="caption auth-description">
+          Build your group, add expenses in seconds, and keep every member aligned with clear balances.
+        </p>
 
         <form onSubmit={onSubmit} className="auth-form">
           <input

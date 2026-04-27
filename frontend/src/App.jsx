@@ -7,6 +7,7 @@ import GroupDetailsPage from "./pages/GroupDetailsPage";
 import ProfilePage from "./pages/ProfilePage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ThemeToggle from "./components/ThemeToggle";
+import TopNav from "./components/TopNav";
 
 function App() {
   const { token } = useAuth();
@@ -14,6 +15,7 @@ function App() {
   return (
     <>
       <ThemeToggle />
+      {token ? <TopNav /> : null}
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

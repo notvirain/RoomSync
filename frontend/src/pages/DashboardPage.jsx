@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
+import Icon from "../components/Icon";
+import SkeletonLoader from "../components/SkeletonLoader";
 import { useAuth } from "../context/AuthContext";
 import { useAppContext } from "../context/AppContext";
 
@@ -144,22 +146,31 @@ const DashboardPage = () => {
 
       <section className="panel animate-rise">
         <h2>Your Groups</h2>
-        {groupsLoading ? <LoadingSpinner message="Loading groups..." /> : null}
         {groupsError ? <p className="error-text">{groupsError}</p> : null}
 
+        {groupsLoading ? (
+          <div>
+            <SkeletonLoader variant="card" />
+            <SkeletonLoader variant="card" />
+          </div>
+        ) : null}
+
         {!groupsLoading && groups.length === 0 ? (
-          <div className="empty-state">
-            <p>No groups yet. Start by creating one or joining with an invite code.</p>
-            <div className="action-row">
-              <button type="button" className="secondary-btn" onClick={() => setGroupName("My First Group")}>Use Sample Group Name</button>
-              <button type="button" className="secondary-btn" onClick={() => fetchGroups()}>Refresh Groups</button>
+          <div className="empty-state" style={{ display: "flex", alignItems: "center" }}>
+            <span className="icon"><Icon name="group" /></span>
+            <div>
+              <p>No groups yet. Start by creating one or joining with an invite code.</p>
+              <div className="action-row">
+                <button type="button" className="secondary-btn" onClick={() => setGroupName("My First Group")}>Use Sample Group Name</button>
+                <button type="button" className="secondary-btn" onClick={() => fetchGroups()}>Refresh Groups</button>
+              </div>
             </div>
           </div>
         ) : null}
 
-        <div className="group-list">
-          {groups.map((group) => (
-            <Link key={group._id} to={`/groups/${group._id}`} className="group-card">
+        <div className="group-list stagger-list">
+          {groups.map((group, idx) => (
+            <Link key={group._id} to={`/groups/${group._id}`} className="group-card" style={{ ['--i']: idx }}>
               <h3>{group.name}</h3>
               <p>{group.members.length} member(s)</p>
               <p className="caption">Invite code: {group.inviteCode || "-"}</p>

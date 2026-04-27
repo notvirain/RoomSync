@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../api/axios";
 import LoadingSpinner from "../components/LoadingSpinner";
+import Icon from "../components/Icon";
+import SkeletonLoader from "../components/SkeletonLoader";
 import { useAppContext } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -369,7 +371,12 @@ const GroupDetailsPage = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner message="Loading group details..." />;
+    return (
+      <div className="page-shell">
+        <SkeletonLoader variant="card" />
+        <SkeletonLoader variant="list" lines={4} />
+      </div>
+    );
   }
 
   const filteredExpenses = expenses
@@ -429,7 +436,12 @@ const GroupDetailsPage = () => {
 
       <section className="panel animate-rise">
         <h2>Balances</h2>
-        {balances.length === 0 ? <p>No balances yet.</p> : null}
+        {balances.length === 0 ? (
+          <p>
+            <span className="icon"><Icon name="empty" /></span>
+            No balances yet.
+          </p>
+        ) : null}
         <ul className="simple-list">
           {balances.map((entry) => (
             <li key={entry.userId}>
@@ -640,18 +652,21 @@ const GroupDetailsPage = () => {
         </div>
 
         {filteredExpenses.length === 0 ? (
-          <div className="empty-state">
-            <p>No expenses match this view yet.</p>
-            <div className="action-row">
-              <button type="button" className="secondary-btn" onClick={fillSampleExpense}>Fill Sample Expense</button>
-              <button type="button" className="secondary-btn" onClick={() => setSearchQuery("")}>Clear Search</button>
+          <div className="empty-state" style={{ display: "flex", alignItems: "center" }}>
+            <span className="icon"><Icon name="empty" /></span>
+            <div>
+              <p>No expenses match this view yet.</p>
+              <div className="action-row">
+                <button type="button" className="secondary-btn" onClick={fillSampleExpense}>Fill Sample Expense</button>
+                <button type="button" className="secondary-btn" onClick={() => setSearchQuery("")}>Clear Search</button>
+              </div>
             </div>
           </div>
         ) : null}
 
-        <ul className="simple-list">
-          {filteredExpenses.map((expense) => (
-            <li key={expense._id}>
+        <ul className="simple-list stagger-list">
+          {filteredExpenses.map((expense, idx) => (
+            <li key={expense._id} style={{ ['--i']: idx }}>
               <strong>{expense.description || "Shared expense"}</strong> - {inr.format(Number(expense.amount || 0))} paid by {expense.paidBy?.name}
               <br />
               <span className="caption">

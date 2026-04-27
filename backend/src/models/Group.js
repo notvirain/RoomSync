@@ -7,6 +7,13 @@ const groupSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    inviteCode: {
+      type: String,
+      required: true,
+      unique: true,
+      uppercase: true,
+      trim: true,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const Expense = require("../models/Expense");
 const Group = require("../models/Group");
 
+const userProjection = "name email username memberCode";
+
 const addExpense = async (req, res) => {
   try {
     const { groupId, amount, paidBy, splitAmong, description } = req.body;
@@ -65,12 +67,14 @@ const addExpense = async (req, res) => {
       description: description ? description.trim() : "",
       amount: Number(amount),
       paidBy,
+      createdBy: req.user._id,
       splitAmong: uniqueSplitAmong,
     });
 
     const populatedExpense = await Expense.findById(expense._id)
-      .populate("paidBy", "name email")
-      .populate("splitAmong", "name email")
+      .populate("paidBy", userProjection)
+      .populate("createdBy", userProjection)
+      .populate("splitAmong", userProjection)
       .populate("group", "name");
 
     return res.status(201).json(populatedExpense);
@@ -97,8 +101,9 @@ const getExpensesByGroup = async (req, res) => {
     }
 
     const expenses = await Expense.find({ group: groupId })
-      .populate("paidBy", "name email")
-      .populate("splitAmong", "name email")
+      .populate("paidBy", userProjection)
+      .populate("createdBy", userProjection)
+      .populate("splitAmong", userProjection)
       .sort({ createdAt: -1 });
 
     return res.status(200).json(expenses);

@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 const RegisterPage = () => {
   const { token, loading, error, setError, register } = useAuth();
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", username: "", password: "" });
 
   if (token) {
     return <Navigate to="/dashboard" replace />;
@@ -20,7 +20,14 @@ const RegisterPage = () => {
   const onSubmit = async (event) => {
     event.preventDefault();
     setError("");
-    await register(formData.name, formData.email, formData.password).catch(() => {});
+
+    const username = formData.username.trim().toLowerCase();
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+      setError("Username must be 3-20 chars using lowercase letters, numbers, or underscore.");
+      return;
+    }
+
+    await register(formData.name, formData.email, username, formData.password).catch(() => {});
   };
 
   return (
@@ -43,6 +50,14 @@ const RegisterPage = () => {
             name="email"
             placeholder="Email"
             value={formData.email}
+            onChange={onChange}
+            required
+          />
+          <input
+            type="text"
+            name="username"
+            placeholder="Unique username (e.g. virain_01)"
+            value={formData.username}
             onChange={onChange}
             required
           />

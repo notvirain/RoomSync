@@ -22,6 +22,11 @@ const expenseSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     splitAmong: [
       {
         type: mongoose.Schema.Types.ObjectId,

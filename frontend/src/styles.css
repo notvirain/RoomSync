@@ -138,6 +138,29 @@ button:disabled {
   flex: 1;
 }
 
+.option-grid,
+.summary-grid,
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+
+.option-card,
+.summary-item {
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  padding: 0.85rem;
+  background: #fff;
+}
+
+.inline-copy {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .group-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -177,6 +200,24 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  padding: 0.45rem 0.55rem;
+  background: #fff;
+}
+
+.check-list label.is-selected {
+  border-color: var(--brand);
+  background: #edf7f2;
+}
+
+.split-toolbar,
+.filters-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
 }
 
 .secondary-btn {
@@ -196,6 +237,11 @@ button:disabled {
 
 .error-text {
   color: var(--danger);
+  margin: 0.2rem 0;
+}
+
+.success-text {
+  color: var(--brand-strong);
   margin: 0.2rem 0;
 }
 
@@ -228,5 +274,9 @@ button:disabled {
 
   .inline-form {
     flex-direction: column;
+  }
+
+  .inline-copy {
+    align-items: flex-start;
   }
 }

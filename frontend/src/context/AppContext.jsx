@@ -28,8 +28,14 @@ export const AppProvider = ({ children }) => {
     return response.data;
   };
 
-  const addMemberToGroup = async (groupId, memberId) => {
-    const response = await api.post(`/groups/${groupId}/add-member`, { memberId });
+  const joinGroup = async (inviteCode) => {
+    const response = await api.post("/groups/join", { inviteCode });
+    await fetchGroups();
+    return response.data;
+  };
+
+  const addMemberToGroup = async (groupId, payload) => {
+    const response = await api.post(`/groups/${groupId}/add-member`, payload);
     await fetchGroups();
     return response.data;
   };
@@ -41,6 +47,7 @@ export const AppProvider = ({ children }) => {
       groupsError,
       fetchGroups,
       createGroup,
+      joinGroup,
       addMemberToGroup,
     }),
     [groups, groupsLoading, groupsError]

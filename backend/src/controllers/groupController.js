@@ -72,6 +72,37 @@ const getGroups = async (req, res) => {
   }
 };
 
+const getJoinRequests = async (req, res) => {
+  try {
+    const groups = await populateGroup(
+      Group.find({ "joinRequests.requestedBy": req.user._id }).sort({ createdAt: -1 })
+    );
+
+    const requests = groups.flatMap((group) =>
+      group.joinRequests
+        .filter((request) =>
+          request.requestedBy?._id?.toString() === req.user._id.toString() && request.status === "pending"
+        )
+        .map((request) => ({
+          _id: request._id,
+          groupId: group._id,
+          groupName: group.name,
+          inviteCode: group.inviteCode,
+          source: request.source,
+          createdAt: request.createdAt,
+          requestedBy: request.requestedBy,
+          createdBy: request.createdBy,
+          approvalsCount: request.approvals?.length || 0,
+          approvalThreshold: Math.max(1, Math.ceil((group.members?.length || 0) / 2)),
+        }))
+    );
+
+    return res.status(200).json(requests);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch join requests" });
+  }
+};
+
 const addMember = async (req, res) => {
   try {
     const { id } = req.params;
@@ -300,6 +331,7 @@ const updateExpenseRetention = async (req, res) => {
 module.exports = {
   createGroup,
   getGroups,
+  getJoinRequests,
   addMember,
   joinGroup,
   approveJoinRequest,

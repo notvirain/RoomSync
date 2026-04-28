@@ -8,7 +8,18 @@ import { useAppContext } from "../context/AppContext";
 
 const DashboardPage = () => {
   const { user, logout } = useAuth();
-  const { groups, groupsLoading, groupsError, fetchGroups, createGroup, joinGroup } = useAppContext();
+  const {
+    groups,
+    joinRequests,
+    groupsLoading,
+    groupsError,
+    joinRequestsLoading,
+    joinRequestsError,
+    fetchGroups,
+    fetchJoinRequests,
+    createGroup,
+    joinGroup,
+  } = useAppContext();
   const [groupName, setGroupName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [localError, setLocalError] = useState("");
@@ -24,6 +35,7 @@ const DashboardPage = () => {
   useEffect(() => {
     if (user?._id) {
       fetchGroups();
+      fetchJoinRequests();
     }
   }, [user?._id]);
 
@@ -142,6 +154,35 @@ const DashboardPage = () => {
         </div>
         {localError ? <p className="error-text">{localError}</p> : null}
         {localSuccess ? <p className="success-text">{localSuccess}</p> : null}
+      </section>
+
+      <section className="panel animate-rise">
+        <h2>Join Requests</h2>
+        {joinRequestsLoading ? <LoadingSpinner message="Loading join requests..." /> : null}
+        {joinRequestsError ? <p className="error-text">{joinRequestsError}</p> : null}
+        {!joinRequestsLoading && joinRequests.length === 0 ? (
+          <div className="empty-state">
+            <p>No pending join requests right now.</p>
+          </div>
+        ) : null}
+
+        <div className="group-list stagger-list">
+          {joinRequests.map((request, idx) => (
+            <div key={request._id} className="group-card animate-fluid" style={{ ['--i']: idx }}>
+              <h3>{request.groupName}</h3>
+              <p className="caption">Invite code: {request.inviteCode}</p>
+              <p>
+                Status: pending approval
+              </p>
+              <p className="caption">
+                {request.approvalsCount}/{request.approvalThreshold} approvals
+              </p>
+              <p className="caption">
+                Requested on {new Date(request.createdAt).toLocaleDateString("en-IN")}
+              </p>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="panel animate-rise">

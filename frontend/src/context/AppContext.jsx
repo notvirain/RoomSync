@@ -5,8 +5,11 @@ const AppContext = createContext(null);
 
 export const AppProvider = ({ children }) => {
   const [groups, setGroups] = useState([]);
+  const [joinRequests, setJoinRequests] = useState([]);
   const [groupsLoading, setGroupsLoading] = useState(false);
   const [groupsError, setGroupsError] = useState("");
+  const [joinRequestsLoading, setJoinRequestsLoading] = useState(false);
+  const [joinRequestsError, setJoinRequestsError] = useState("");
 
   const fetchGroups = async () => {
     setGroupsLoading(true);
@@ -19,6 +22,20 @@ export const AppProvider = ({ children }) => {
       setGroupsError(err.response?.data?.message || "Failed to load groups");
     } finally {
       setGroupsLoading(false);
+    }
+  };
+
+  const fetchJoinRequests = async () => {
+    setJoinRequestsLoading(true);
+    setJoinRequestsError("");
+
+    try {
+      const response = await api.get("/groups/join-requests");
+      setJoinRequests(response.data);
+    } catch (err) {
+      setJoinRequestsError(err.response?.data?.message || "Failed to load join requests");
+    } finally {
+      setJoinRequestsLoading(false);
     }
   };
 
@@ -55,16 +72,20 @@ export const AppProvider = ({ children }) => {
   const value = useMemo(
     () => ({
       groups,
+      joinRequests,
       groupsLoading,
       groupsError,
+      joinRequestsLoading,
+      joinRequestsError,
       fetchGroups,
+      fetchJoinRequests,
       createGroup,
       joinGroup,
       addMemberToGroup,
       approveJoinRequest,
       deleteGroup,
     }),
-    [groups, groupsLoading, groupsError]
+    [groups, joinRequests, groupsLoading, groupsError, joinRequestsLoading, joinRequestsError]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

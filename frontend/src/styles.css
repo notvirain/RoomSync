@@ -503,6 +503,14 @@ button:disabled {
   box-shadow: var(--shadow-soft);
 }
 
+.group-card.request-card {
+  border-style: dashed;
+}
+
+.group-card.request-card p {
+  margin: 0.25rem 0;
+}
+
 .simple-list {
   margin: 0;
   margin-top: 0.75rem;

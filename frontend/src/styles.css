@@ -1,48 +1,49 @@
 :root {
-  --bg-main: #eef2f8;
-  --bg-accent: #e7f0ff;
-  --bg-layer: #f7f9fd;
-  --page-glow-a: #dff0ff;
-  --page-glow-b: #f5e8ff;
-  --ink: #1a2633;
-  --ink-soft: #5f7082;
-  --brand: #2f6ee5;
-  --brand-strong: #1f4fb0;
+  /* Glassy Apple-like tokens */
+  --bg-main: #f6f9fb;
+  --bg-accent: #f3f7fb;
+  --bg-layer: #fbfdff;
+  --page-glow-a: #eaf6ff;
+  --page-glow-b: #f7ecff;
+  --ink: #0f1720;
+  --ink-soft: #556a7a;
+  --brand: #3b82f6;
+  --brand-strong: #1e56c8;
   --danger: #b42318;
   --success: #127a52;
   --btn-contrast: #ffffff;
-  --card: rgba(255, 255, 255, 0.66);
-  --card-strong: rgba(255, 255, 255, 0.84);
-  --border: rgba(116, 137, 171, 0.34);
-  --ring: rgba(47, 110, 229, 0.22);
-  --shadow: 0 22px 52px rgba(36, 72, 118, 0.14);
-  --shadow-soft: 0 10px 22px rgba(27, 56, 94, 0.1);
+  --card: rgba(255, 255, 255, 0.36);
+  --card-strong: rgba(255, 255, 255, 0.6);
+  --border: rgba(255, 255, 255, 0.18);
+  --ring: rgba(59,130,246,0.16);
+  --shadow: 0 10px 30px rgba(18, 28, 40, 0.08);
+  --shadow-soft: 0 8px 20px rgba(18, 28, 40, 0.06);
   --radius-lg: 1.2rem;
   --radius-md: 0.9rem;
   --radius-sm: 0.7rem;
-  --blur: saturate(135%) blur(10px);
+  --blur: saturate(150%) blur(16px);
 }
 
 body[data-theme="dark"] {
-  --bg-main: #0a1220;
-  --bg-accent: #111c32;
-  --bg-layer: #0c1528;
-  --page-glow-a: #1f2e4a;
-  --page-glow-b: #3c2a53;
-  --ink: #e8efff;
-  --ink-soft: #adbbd3;
-  --brand: #67b3ff;
+  --bg-main: #061018;
+  --bg-accent: #071724;
+  --bg-layer: #071422;
+  --page-glow-a: #112634;
+  --page-glow-b: #2b2340;
+  --ink: #e6f0ff;
+  --ink-soft: #9fb0c6;
+  --brand: #60a5fa;
   --brand-strong: #9ed1ff;
   --danger: #ff7d72;
   --success: #65cfb0;
-  --btn-contrast: #081726;
-  --card: rgba(18, 29, 51, 0.64);
-  --card-strong: rgba(24, 38, 64, 0.8);
-  --border: rgba(130, 160, 203, 0.3);
-  --ring: rgba(103, 179, 255, 0.28);
-  --shadow: 0 26px 58px rgba(4, 9, 22, 0.5);
-  --shadow-soft: 0 14px 30px rgba(6, 13, 28, 0.38);
-  --blur: saturate(140%) blur(12px);
+  --btn-contrast: #031226;
+  --card: rgba(14, 20, 30, 0.5);
+  --card-strong: rgba(20, 26, 36, 0.72);
+  --border: rgba(255, 255, 255, 0.06);
+  --ring: rgba(96,165,250,0.14);
+  --shadow: 0 18px 44px rgba(2,6,20,0.6);
+  --shadow-soft: 0 10px 26px rgba(2,6,20,0.45);
+  --blur: saturate(160%) blur(18px);
 }
 
 * {
@@ -167,38 +168,14 @@ h3 {
 }
 
 /* Brand area above topnav */
-.brand-area {
-  position: fixed;
-  top: 0.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  justify-content: center;
-  gap: 0.7rem;
-  align-items: center;
-  z-index: 130;
-  width: min(1040px, 94vw);
-  padding: 0.6rem 1rem;
-  background: linear-gradient(160deg, color-mix(in srgb, var(--card-strong) 88%, transparent), color-mix(in srgb, var(--card) 94%, transparent));
-  border: 1px solid var(--border);
-  border-radius: 0.9rem;
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: var(--blur);
-}
-
-.brand-title {
-  font-weight: 800;
-  font-size: 1.24rem;
-  letter-spacing: -0.02em;
-  color: color-mix(in srgb, var(--brand-strong) 92%, var(--ink) 8%);
-}
+/* .brand-area and title removed (logo hidden to avoid obstructing controls) */
 
 /* Top navigation compact strip */
 .topnav {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  top: 3.8rem;
+  top: 1.1rem;
   width: min(1040px, 94vw);
   display: flex;
   justify-content: space-between;
@@ -206,9 +183,10 @@ h3 {
   gap: 1.2rem;
   padding: 0.68rem 1rem;
   border-radius: 1rem;
-  background: color-mix(in srgb, var(--card-strong) 86%, transparent);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-soft);
+  /* Stronger frosted glass surface */
+  background: linear-gradient(180deg, color-mix(in srgb, var(--card-strong) 82%, transparent), color-mix(in srgb, var(--card) 86%, transparent));
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: var(--shadow);
   z-index: 120;
   backdrop-filter: var(--blur);
 }
@@ -785,8 +763,8 @@ body[data-theme="dark"] .secondary-btn:hover {
 .simple-list > li.animate-fluid { transition: transform 240ms cubic-bezier(.2,.9,.2,1); }
 .simple-list > li.animate-fluid:hover { transform: translateY(-4px); }
 
-/* Space for brand area + topnav so content isn't hidden under fixed nav */
-.page-shell { padding-top: 8.2rem; }
+/* Space for topnav so content isn't hidden under fixed nav */
+.page-shell { padding-top: 5.2rem; }
 
 @keyframes riseIn {
   from {

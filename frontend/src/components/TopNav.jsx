@@ -8,12 +8,6 @@ const TopNav = () => {
 
   return (
     <>
-      {/* Brand area above topnav */}
-      <div className="brand-area animate-fluid">
-        <Icon name="spark" size={24} />
-        <span className="brand-title">RoomSync</span>
-      </div>
-
       <div className="topnav">
         <nav className="topnav-pages" aria-label="Primary">
           <Link to="/dashboard" className="animate-hover">Dashboard</Link>

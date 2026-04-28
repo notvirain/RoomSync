@@ -25,6 +25,40 @@ const groupSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    joinRequests: [
+      {
+        requestedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        createdBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        source: {
+          type: String,
+          enum: ["self", "invite"],
+          default: "self",
+        },
+        approvals: [
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+          },
+        ],
+        status: {
+          type: String,
+          enum: ["pending", "approved"],
+          default: "pending",
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     expenseRetentionDays: {
       type: Number,
       default: 3650,

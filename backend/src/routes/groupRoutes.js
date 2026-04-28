@@ -4,6 +4,7 @@ const {
 	getGroups,
 	addMember,
 	joinGroup,
+	approveJoinRequest,
 	deleteGroup,
 	updateExpenseRetention,
 } = require("../controllers/groupController");
@@ -16,6 +17,7 @@ router.post("/", protect, createGroup);
 router.get("/", protect, getGroups);
 router.post("/join", protect, joinGroup);
 router.post("/:id/add-member", protect, validateObjectIdParam("id"), addMember);
+router.post("/:id/join-requests/:requestId/approve", protect, validateObjectIdParam("id"), approveJoinRequest);
 router.delete("/:id", protect, validateObjectIdParam("id"), deleteGroup);
 router.patch("/:id/retention", protect, validateObjectIdParam("id"), updateExpenseRetention);
 

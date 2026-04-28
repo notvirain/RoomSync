@@ -78,7 +78,7 @@ const DashboardPage = () => {
       setJoining(true);
       await joinGroup(inviteCode);
       setJoinCode("");
-      setLocalSuccess("Joined group successfully.");
+      setLocalSuccess("Join request submitted.");
     } catch (error) {
       setLocalError(error.response?.data?.message || "Failed to join group");
     } finally {
@@ -124,8 +124,8 @@ const DashboardPage = () => {
           </div>
 
           <div className="option-card">
-            <h3>Join a Group</h3>
-            <p className="caption">Paste a group invite code shared by a member.</p>
+            <h3>Request to Join</h3>
+            <p className="caption">Paste a group invite code and send a join request for approval.</p>
             <form onSubmit={handleJoinGroup} className="inline-form">
               <input
                 type="text"
@@ -135,7 +135,7 @@ const DashboardPage = () => {
                 disabled={creating || joining}
               />
               <button type="submit" disabled={creating || joining}>
-                {joining ? "Joining..." : "Join"}
+                {joining ? "Sending..." : "Request Join"}
               </button>
             </form>
           </div>

@@ -40,6 +40,12 @@ export const AppProvider = ({ children }) => {
     return response.data;
   };
 
+  const approveJoinRequest = async (groupId, requestId) => {
+    const response = await api.post(`/groups/${groupId}/join-requests/${requestId}/approve`);
+    await fetchGroups();
+    return response.data;
+  };
+
   const deleteGroup = async (groupId) => {
     const response = await api.delete(`/groups/${groupId}`);
     await fetchGroups();
@@ -55,6 +61,7 @@ export const AppProvider = ({ children }) => {
       createGroup,
       joinGroup,
       addMemberToGroup,
+      approveJoinRequest,
       deleteGroup,
     }),
     [groups, groupsLoading, groupsError]

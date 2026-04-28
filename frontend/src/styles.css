@@ -173,9 +173,11 @@ h3 {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
+  justify-content: center;
   gap: 0.7rem;
   align-items: center;
   z-index: 130;
+  width: min(1040px, 94vw);
   padding: 0.6rem 1rem;
   background: linear-gradient(160deg, color-mix(in srgb, var(--card-strong) 88%, transparent), color-mix(in srgb, var(--card) 94%, transparent));
   border: 1px solid var(--border);
@@ -240,7 +242,7 @@ h3 {
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  max-width: 320px;
+  max-width: 420px;
 }
 
 .search-icon {
@@ -263,6 +265,18 @@ h3 {
 
 .search-input::placeholder { color: color-mix(in srgb, var(--ink-soft) 72%, transparent); }
 .search-input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--ring); }
+
+.request-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.request-row strong {
+  display: block;
+  margin-bottom: 0.15rem;
+}
 
 /* Accent presets -- applied via body[data-accent] */
 body[data-accent="ocean"] {

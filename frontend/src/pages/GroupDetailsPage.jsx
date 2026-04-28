@@ -25,7 +25,7 @@ const GroupDetailsPage = () => {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { groups, fetchGroups, addMemberToGroup, deleteGroup } = useAppContext();
+  const { groups, fetchGroups, addMemberToGroup, approveJoinRequest, deleteGroup } = useAppContext();
 
   const [expenses, setExpenses] = useState([]);
   const [balances, setBalances] = useState([]);
@@ -40,6 +40,7 @@ const GroupDetailsPage = () => {
   const [settling, setSettling] = useState(false);
   const [updatingRetention, setUpdatingRetention] = useState(false);
   const [cleaningOldExpenses, setCleaningOldExpenses] = useState(false);
+  const [approvingRequestId, setApprovingRequestId] = useState("");
 
   const [memberUsername, setMemberUsername] = useState("");
   const [memberCode, setMemberCode] = useState("");
@@ -110,6 +111,8 @@ const GroupDetailsPage = () => {
   }, [expenseToast]);
 
   const canDeleteGroup = group?.createdBy?._id === user?._id;
+  const isGroupMember = (group?.members || []).some((member) => String(member._id) === String(user?._id));
+  const pendingJoinRequests = group?.joinRequests || [];
 
   const handleSplitToggle = (userId) => {
     setExpenseForm((prev) => {
@@ -170,7 +173,7 @@ const GroupDetailsPage = () => {
       });
       setMemberUsername("");
       setMemberCode("");
-      setSuccess("Member invited successfully.");
+      setSuccess("Join request sent successfully.");
       await loadDetails();
       await fetchGroups();
     } catch (err) {
@@ -238,6 +241,21 @@ const GroupDetailsPage = () => {
     } catch (err) {
       setError(err.response?.data?.message || "Failed to delete group");
       setDeletingGroup(false);
+    }
+  };
+
+  const handleApproveRequest = async (requestId) => {
+    try {
+      setApprovingRequestId(requestId);
+      setError("");
+      setSuccess("");
+      await approveJoinRequest(groupId, requestId);
+      await loadDetails();
+      setSuccess("Join request updated.");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to approve join request");
+    } finally {
+      setApprovingRequestId("");
     }
   };
 
@@ -417,9 +435,6 @@ const GroupDetailsPage = () => {
           <h1>{group?.name || "Group"}</h1>
         </div>
         <div className="action-row">
-          <Link to="/profile" className="profile-icon-link" title="Open profile page" aria-label="Open profile page">
-            👤
-          </Link>
           {canDeleteGroup ? (
             <button type="button" className="danger-btn" onClick={handleDeleteGroup} disabled={deletingGroup}>
               {deletingGroup ? "Deleting..." : "Delete Group"}
@@ -530,6 +545,38 @@ const GroupDetailsPage = () => {
           ))}
         </ul>
       </details>
+
+      {isGroupMember && pendingJoinRequests.length > 0 ? (
+        <details className="dropdown-panel animate-rise" open>
+          <summary>Pending Join Requests</summary>
+          <ul className="simple-list">
+            {pendingJoinRequests.map((request) => {
+              const requestedBy = request.requestedBy || {};
+              const approvalsCount = request.approvals?.length || 0;
+              const approvalThreshold = Math.max(1, Math.ceil((group?.members?.length || 0) / 2));
+
+              return (
+                <li key={request._id} className="request-row">
+                  <div>
+                    <strong>{requestedBy.name || requestedBy.email || "Unknown user"}</strong>
+                    <div className="caption">
+                      {request.source === "invite" ? "Invited by a member" : "Asked to join"} · {approvalsCount}/{approvalThreshold} approvals
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="secondary-btn"
+                    onClick={() => handleApproveRequest(request._id)}
+                    disabled={approvingRequestId === request._id}
+                  >
+                    {approvingRequestId === request._id ? "Updating..." : "Approve"}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </details>
+      ) : null}
 
       <details className="dropdown-panel animate-rise" open>
         <summary>Expense Retention & Cleanup</summary>
@@ -666,7 +713,7 @@ const GroupDetailsPage = () => {
 
         <ul className="simple-list stagger-list">
           {filteredExpenses.map((expense, idx) => (
-            <li key={expense._id} className="animate-fluid" style={{ ['--i']: idx }}>
+            <li key={expense._id} style={{ ['--i']: idx }}>
               <strong>{expense.description || "Shared expense"}</strong> - {inr.format(Number(expense.amount || 0))} paid by {expense.paidBy?.name}
               <br />
               <span className="caption">
